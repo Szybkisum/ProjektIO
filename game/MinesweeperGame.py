@@ -24,48 +24,48 @@ class MinesweeperGame():
         while mines_placed < self.num_mines:
             x = random.randint(0, self.width - 1)
             y = random.randint(0, self.height - 1)
-            if not self.board[y][x].is_mine(): # '*' oznacza minę
+            if not self.board[y][x].is_mine():
                 self.board[y][x].place_mine()
                 mines_placed += 1
 
-    def _calculate_numbers(self):
-        for y in range(self.height):
-            for x in range(self.width):
-                if self.board[y][x].is_mine():
-                    continue
-                mine_count = self._count_mines_around(y, x)
-                if mine_count > 0:
-                    self.board[y][x].place_number(mine_count)
-
-    def _count_mines_around(self, y, x):
-        count = 0
+    def _get_valid_neighbors(self, y, x):
         for i in range(-1, 2):
             for j in range(-1, 2):
                 if i == 0 and j == 0:
                     continue
+                
                 check_y, check_x = y + i, x + j
                 if self._is_on_board(check_y, check_x):
-                    if self.board[check_y][check_x].is_mine():
-                        count += 1
-        return count
+                    yield (check_y, check_x)
 
-    def _check_win_condition(self):
-        hidden_tiles = 0
+    def _get_all_tiles(self):
         for y in range(self.height):
             for x in range(self.width):
-                if self.board[y][x].is_hidden_or_flagged():
-                    hidden_tiles += 1
-        
+                yield (y, x, self.board[y][x])
+
+    def _count_mines_around(self, y, x):
+        return sum(1 for ny, nx in self._get_valid_neighbors(y, x) if self.board[ny][nx].is_mine())
+
+    def _calculate_numbers(self):
+        for y, x, tile in self._get_all_tiles():
+            if tile.is_mine():
+                continue
+            mine_count = self._count_mines_around(y, x)
+            if mine_count > 0:
+                tile.place_number(mine_count)
+
+    def _check_win_condition(self):
+        hidden_tiles = sum(1 for _, _, tile in self._get_all_tiles() if tile.is_hidden_or_flagged())
         if hidden_tiles == self.num_mines:
             self.game_state = 'won'
 
     def _reveal_around(self, y, x):
-        for i in range(-1, 2):
-            for j in range(-1, 2):
-                if i == 0 and j == 0:
-                    continue
-                self.reveal_tile(y + i, x + j)
+        for neighbor_y, neighbor_x in self._get_valid_neighbors(y, x):
+            self.reveal_tile(neighbor_y, neighbor_x)
 
+    def _reveal_all(self):
+        for _, _, tile in self._get_all_tiles():
+            tile.reveal()
 
     def reveal_tile(self, y, x):
         if not self._is_clickable(y, x):
@@ -76,6 +76,7 @@ class MinesweeperGame():
 
         if tile.is_mine():
             self.game_state = 'lost'
+            self._reveal_all()
             return
 
         if tile.is_empty():
@@ -88,6 +89,19 @@ class MinesweeperGame():
             return
         self.board[y][x].toggle_flag()
 
+    def get_observation(self):
+        """
+        Zwraca reprezentację planszy widoczną dla agenta (tablica 2D).
+        """
+        observation = [[' ' for _ in range(self.width)] for _ in range(self.height)]
+        for y, x, tile in self._get_all_tiles():
+            if tile.is_flagged():
+                observation[y][x] = 'F'
+            elif tile.is_hidden():
+                observation[y][x] = 'H'
+            else:
+                observation[y][x] = tile.get_value()
+        return observation
 
     def get_player_board_view(self):
         display_board = []
