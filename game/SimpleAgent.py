@@ -1,5 +1,3 @@
-from MinesweeperGame import MinesweeperGame
-
 class SimpleAgent:
 
     def _get_neighbors_coords(self, y, x, height, width):
@@ -38,42 +36,10 @@ class SimpleAgent:
                     
                     if len(hidden_neighbors) > 0 and (len(hidden_neighbors) + flagged_count) == n:
                         ny, nx = hidden_neighbors[0]
-                        print(f"Agent: Znalazłem minę na ({nx}, {ny}) na podstawie pola ({x}, {y})")
                         return ('flag', ny, nx)
 
                     if len(hidden_neighbors) > 0 and flagged_count == n:
                         ny, nx = hidden_neighbors[0]
-                        print(f"Agent: Znalazłem bezpieczne pole na ({nx}, {ny}) na podstawie pola ({x}, {y})")
                         return ('reveal', ny, nx)
 
         return None
-
-
-if __name__ == '__main__':
-
-    game = MinesweeperGame(width=9, height=9, num_mines=10)
-    agent = SimpleAgent()
-
-    game.reveal_tile(4, 4)
-    print("--- Plansza na starcie ---")
-    print(game.get_player_board_view())
-    print("-" * 20)
-
-    while game.game_state == 'ongoing':
-        current_observation = game.get_observation()
-        
-        action = agent.make_move(current_observation)
-
-        if action is None:
-            print("Agent nie znalazł pewnego ruchu.")
-            break
-
-        action_type, y, x = action
-        if action_type == 'reveal':
-            game.reveal_tile(y, x)
-        elif action_type == 'flag':
-            game.toggle_flag(y, x)
-        print(game.get_player_board_view())
-        print("-" * 20)
-
-    print(f"\nGra zakończona! Stan: {game.game_state}")

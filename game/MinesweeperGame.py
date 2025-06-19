@@ -8,25 +8,33 @@ class MinesweeperGame():
         self.num_mines = num_mines
 
         self.board = [[Tile() for _ in range(self.width)] for _ in range(self.height)]
-        self.game_state = 'ongoing'
-
-        self._place_mines()
-        self._calculate_numbers()
+        self.game_state = 'initial'
 
     def _is_on_board(self, y, x):
         return 0 <= y < self.height and 0 <= x < self.width
 
     def _is_clickable(self, y, x):
-        return self._is_on_board(y, x) and self.board[y][x].is_hidden_or_flagged() and self.game_state == 'ongoing'
+        return self._is_on_board(y, x) and self.board[y][x].is_hidden_or_flagged() and self.game_state in ('ongoing', 'initial')
     
-    def _place_mines(self):
+    def _initialize(self, empty_y, empty_x):
+        self._place_mines(empty_y, empty_x)
+        self._calculate_numbers()
+        self.game_state = 'ongoing'
+
+    def _place_mines(self, empty_y, empty_x):
         mines_placed = 0
+        taken = list(self._get_valid_neighbors(empty_y, empty_x))
+        taken.append((empty_y, empty_x))
         while mines_placed < self.num_mines:
-            x = random.randint(0, self.width - 1)
             y = random.randint(0, self.height - 1)
-            if not self.board[y][x].is_mine():
+            x = random.randint(0, self.width - 1)
+            curr = (y, x)
+            if curr not in taken:
                 self.board[y][x].place_mine()
+                taken.append((y, x))
                 mines_placed += 1
+            
+            
 
     def _get_valid_neighbors(self, y, x):
         for i in range(-1, 2):
@@ -70,6 +78,9 @@ class MinesweeperGame():
     def reveal_tile(self, y, x):
         if not self._is_clickable(y, x):
             return
+
+        if self.game_state == 'initial':
+            self._initialize(y, x)
 
         tile = self.board[y][x]
         tile.reveal()
@@ -118,16 +129,3 @@ class MinesweeperGame():
             display_board.append(" ".join(row_str))
         return "\n".join(display_board)
 
-
-
-if __name__ == '__main__':
-    game = MinesweeperGame(width=9, height=9, num_mines=10)
-    print("--- Plansza na starcie ---")
-    print(game.get_player_board_view())
-
-    game.reveal_tile(4, 4)
-    game.toggle_flag(0, 1)
-    
-    print("\n--- Plansza po kilku ruchach ---")
-    print(game.get_player_board_view())
-    print(f"Stan gry: {game.game_state}")
