@@ -12,8 +12,8 @@ class Tile():
     def is_flagged(self):
         return self.display == 'F'
 
-    def is_hidden_or_flagged(self):
-        return self.display in ('H', 'F')
+    def is_revealed(self):
+        return self.display == 'R'
     
     def is_mine(self):
         return self.value == '*'

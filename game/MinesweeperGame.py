@@ -9,12 +9,12 @@ class MinesweeperGame():
 
         self.board = [[Tile() for _ in range(self.width)] for _ in range(self.height)]
         self.game_state = 'initial'
-
+        self.loosing_tile = None
     def _is_on_board(self, y, x):
         return 0 <= y < self.height and 0 <= x < self.width
 
-    def _is_clickable(self, y, x):
-        return self._is_on_board(y, x) and self.board[y][x].is_hidden_or_flagged() and self.game_state in ('ongoing', 'initial')
+    def is_clickable(self, y, x):
+        return self._is_on_board(y, x) and not self.board[y][x].is_revealed() and self.game_state in ('ongoing', 'initial')
     
     def _initialize(self, empty_y, empty_x):
         self._place_mines(empty_y, empty_x)
@@ -62,9 +62,11 @@ class MinesweeperGame():
             if mine_count > 0:
                 tile.place_number(mine_count)
 
-    def _check_win_condition(self):
-        hidden_tiles = sum(1 for _, _, tile in self._get_all_tiles() if tile.is_hidden_or_flagged())
-        if hidden_tiles == self.num_mines:
+    def _check_win_condition(self):        
+        for y, x, tile in self._get_all_tiles():
+            if not tile.is_mine() and tile.is_hidden():
+                return
+        if self.game_state == 'ongoing':
             self.game_state = 'won'
 
     def _reveal_around(self, y, x):
@@ -76,7 +78,7 @@ class MinesweeperGame():
             tile.reveal()
 
     def reveal_tile(self, y, x):
-        if not self._is_clickable(y, x):
+        if not self.is_clickable(y, x):
             return
 
         if self.game_state == 'initial':
@@ -86,6 +88,7 @@ class MinesweeperGame():
         tile.reveal()
 
         if tile.is_mine():
+            self.loosing_tile = (y, x)
             self.game_state = 'lost'
             self._reveal_all()
             return
@@ -96,7 +99,7 @@ class MinesweeperGame():
         self._check_win_condition()
 
     def toggle_flag(self, y, x):
-        if not self._is_clickable(y, x):
+        if not self.is_clickable(y, x):
             return
         self.board[y][x].toggle_flag()
 
@@ -123,7 +126,7 @@ class MinesweeperGame():
                 if tile.is_flagged():
                     row_str.append('!')
                 elif tile.is_hidden():
-                    row_str.append('■')
+                    row_str.append('#')
                 else:
                     row_str.append(tile.get_value())
             display_board.append(" ".join(row_str))

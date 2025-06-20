@@ -4,6 +4,8 @@ from dqn_architecture import preprocess_observation
 from DiffcultySettings import DIFFICULTY_LEVELS
 import numpy as np # type: ignore
 import matplotlib.pyplot as plt # type: ignore
+import pickle
+import os
 
 def get_reward(game_state_after, is_illegal_move):
     """Definiuje system nagród dla agenta."""
@@ -39,11 +41,53 @@ def plot_history(history, name):
 
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     plt.savefig(name)
+    plt.close()
     print(f"\nZapisano wykresy postępu do pliku {name}")
 
+def save_checkpoint(agent, history, episode, difficulty):
+    """Zapisuje kompletny stan treningu do plików."""
+    
+    model_path = f"./dqn_model_{difficulty}.keras"
+    checkpoint_path = f"./checkpoint_{difficulty}.pkl"
+    agent.save(model_path)
+    
+    checkpoint = {
+        'history': history,
+        'episode': episode,
+        'epsilon': agent.epsilon
+    }
+    
+    with open(checkpoint_path, 'wb') as f:
+        pickle.dump(checkpoint, f)
+    
+    print(f"\n--- Zapisano checkpoint po epizodzie {episode} do plików: {model_path} i {checkpoint_path} ---")
+
+def load_checkpoint(agent, difficulty):
+    """
+    Wczytuje kompletny stan treningu z plików, jeśli istnieją.
+    Zwraca (history, start_episode, agent).
+    """
+    model_path = f"./dqn_model_{difficulty}.keras"
+    checkpoint_path = f"./checkpoint_{difficulty}.pkl"
+
+    if os.path.exists(model_path) and os.path.exists(checkpoint_path):
+        print(f"Znaleziono checkpoint dla '{difficulty}'. Wznawiam trening...")
+        
+        agent.load(model_path)
+        with open(checkpoint_path, 'rb') as f:
+            checkpoint = pickle.load(f)   
+        history = checkpoint['history']
+        start_episode = checkpoint['episode']
+        agent.epsilon = checkpoint['epsilon']
+        
+        return history, start_episode
+    else:
+        print("Nie znaleziono checkpointu. Rozpoczynam nowy trening.")
+        history = {'rewards': [], 'avg_loss': [], 'epsilon': []}
+        return history, 0
 
 def train_dqn():
-    EPISODES = 10000
+    EPISODES = 20000
     MAX_STEPS = 1000
     DIFFICULTY = "BABY"
     settings = DIFFICULTY_LEVELS[DIFFICULTY]
@@ -53,10 +97,10 @@ def train_dqn():
 
     state_shape = (height, width, 12)
     agent = DQNAgent(state_shape, num_actions)
-    
-    history = {'rewards': [], 'avg_loss': [], 'epsilon': []}
 
-    for e in range(EPISODES):
+    history, start_episode = load_checkpoint(agent, DIFFICULTY)
+
+    for e in range(start_episode, EPISODES):
         game = MinesweeperGame(**settings)
         
         start_y, start_x = np.random.randint(0, height), np.random.randint(0, width)
@@ -103,11 +147,10 @@ def train_dqn():
         
         print(f"Epizod: {e+1}/{EPISODES}, Nagroda: {total_reward:.2f}, Epsilon: {agent.epsilon:.2f}, Stan gry: {game.game_state}")
         
-        if (e + 1) % 500 == 0:
-            save_path = f"./minesweeper-dqn-{DIFFICULTY}"
-            agent.save(f"{save_path}.weights.h5")
-            print(f"Zapisano model do pliku: {save_path}")
-            plot_history(history, f"{save_path}-episode-{e + 1}.png")
+        if (e + 1) % 100 == 0:
+            save_checkpoint(agent, history, e + 1, DIFFICULTY)
+            if (e + 1) % 500 == 0:
+                plot_history(history, f"./training_progress_{DIFFICULTY}_ep_{e+1}.png")
 
     plot_history(history, f"final_training_progress_{DIFFICULTY}.png")
 

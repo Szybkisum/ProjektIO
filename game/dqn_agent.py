@@ -1,6 +1,7 @@
 import numpy as np # type: ignore
 import random
 from dqn_architecture import create_dqn_model, ReplayBuffer
+from tensorflow.keras.models import load_model # type: ignore
 
 class DQNAgent:
     def __init__(self, state_shape, num_actions):
@@ -39,16 +40,7 @@ class DQNAgent:
             if observation[y][x] != 'H':
                 q_values[i] = -np.inf
         
-        action_idx = np.argmax(q_values)
-
-        if q_values[action_idx] == -np.inf:
-            legal_actions = [i for i, tile in enumerate(np.array(observation).flatten()) if tile == 'H']
-            if not legal_actions:
-                print("NAJN")
-                return random.randrange(self.num_actions)
-            return random.choice(legal_actions)
-
-        return action_idx
+        return np.argmax(q_values)
 
     def remember(self, state, action, reward, next_state, done):
         """Zapisuje doświadczenie w buforze powtórek."""
@@ -87,8 +79,9 @@ class DQNAgent:
         return loss
             
     def load(self, name):
-        self.model.load_weights(name)
+        self.model = load_model(name)
+        self.target_model = load_model(name)
         self.update_target_model()
 
     def save(self, name):
-        self.model.save_weights(name)
+        self.model.save(name)
