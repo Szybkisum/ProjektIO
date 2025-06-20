@@ -57,29 +57,29 @@ def run_demonstration():
 
         if game.game_state in ('initial', 'ongoing') and current_time - last_move_time > DELAY_BETWEEN_MOVES:
                 
-                last_move_time = current_time
-                observation = game.get_observation()
+            last_move_time = current_time
+            observation = game.get_observation()
 
-                if isinstance(agent, DQNAgent):
-                    state = preprocess_observation(observation)
-                    action_idx = agent.act(state, observation)
-                    y, x = divmod(action_idx, settings['width'])
-                    action = ('reveal', y, x)
+            if isinstance(agent, DQNAgent):
+                state = preprocess_observation(observation)
+                action_idx = agent.act(state, observation)
+                y, x = divmod(action_idx, settings['width'])
+                action = ('reveal', y, x)
+            else:
+                action = agent.make_move(observation)
+
+            if action is None:
+                if game.game_state == 'initial':
+                    start_y, start_x = random.randint(0, game.height - 1), random.randint(0, game.width - 1)
+                    action = ('reveal', start_y, start_x)
                 else:
-                    action = agent.make_move(observation)
-
-                if action is None:
-                    if game.game_state == 'initial':
-                        start_y, start_x = random.randint(0, game.height - 1), random.randint(0, game.width - 1)
-                        action = ('reveal', start_y, start_x)
-                    else:
-                        game.game_state = 'lost'
-                if action:
-                    action_type, y, x = action
-                    if action_type == 'reveal':
-                        game.reveal_tile(y, x)
-                    elif action_type == 'flag':
-                        game.toggle_flag(y, x)
+                    game.game_state = 'lost'
+            if action:
+                action_type, y, x = action
+                if action_type == 'reveal':
+                    game.reveal_tile(y, x)
+                elif action_type == 'flag':
+                    game.toggle_flag(y, x)
 
         elif game.game_state in ('won', 'lost'):
             if game_over_pause_time is None:
