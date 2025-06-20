@@ -10,9 +10,6 @@ import os
 def run_evaluation(agent, difficulty_settings, num_games=100, agent_type='SIMPLE'):
     """Uniwersalna funkcja do ewaluacji dowolnego agenta."""
     stats = {'won': 0, 'lost': 0}
-    
-    if agent_type == "DQN":
-        agent.epsilon = 0.0
 
     print(f"Rozpoczynam ewaluację agenta: {agent_type} ({num_games} gier)...")
     
@@ -70,7 +67,7 @@ def print_final_results(results, num_games):
     print("\n" + "="*60)
 
 if __name__ == '__main__':
-    NUM_GAMES = 100000
+    NUM_GAMES = 1000
     DIFFICULTY_NAME = "BABY"
     DIFFICULTY_SETTINGS = DIFFICULTY_LEVELS[DIFFICULTY_NAME]
 
@@ -93,7 +90,9 @@ if __name__ == '__main__':
             state_shape=(DIFFICULTY_SETTINGS['height'], DIFFICULTY_SETTINGS['width'], 12),
             num_actions=DIFFICULTY_SETTINGS['height'] * DIFFICULTY_SETTINGS['width']
         )
-        dqn_stats = run_evaluation(dqn_agent, DIFFICULTY_SETTINGS, NUM_GAMES, agent_type='DQN', model_path=MODEL_PATH)
+        dqn_agent.load(MODEL_PATH)
+        dqn_agent.epsilon = 0.0
+        dqn_stats = run_evaluation(dqn_agent, DIFFICULTY_SETTINGS, NUM_GAMES, agent_type='DQN')
         all_results['DQNAgent'] = {'stats': dqn_stats, 'difficulty': DIFFICULTY_NAME}
     else:
         print(f"\nOSTRZEŻENIE: Nie znaleziono pliku modelu '{MODEL_PATH}'. Pomijam ewaluację agenta DQN.")

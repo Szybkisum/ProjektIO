@@ -149,7 +149,7 @@ def train_dqn():
         
         if (e + 1) % 100 == 0:
             save_checkpoint(agent, history, e + 1, DIFFICULTY)
-            if (e + 1) % 500 == 0:
+            if (e + 1) % 1000 == 0:
                 plot_history(history, f"./training_progress_{DIFFICULTY}_ep_{e+1}.png")
 
     plot_history(history, f"final_training_progress_{DIFFICULTY}.png")
