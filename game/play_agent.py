@@ -9,9 +9,9 @@ from SimpleAgent import SimpleAgent
 from GuessingAgent import GuessingAgent
 
 # Opcje: "SIMPLE", "GUESSING", "DQN"
-AGENT_TYPE = "GUESSING"
-DIFFICULTY_NAME = "HARD"
-MODEL_PATH = f"./dqn_model_{DIFFICULTY_NAME}.keras" 
+AGENT_TYPE = "DQN"
+DIFFICULTY_NAME = "BABY"
+MODEL_PATH = f"./dqn_model_{DIFFICULTY_NAME}_10500.keras" 
 DELAY_BETWEEN_MOVES = 500
 
 def initialize_agent(agent_type, difficulty_settings, model_path):

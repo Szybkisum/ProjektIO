@@ -13,7 +13,7 @@ class DQNAgent:
         self.gamma = 0.95
         self.epsilon = 1.0
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.9995
+        self.epsilon_decay = 0.9996 # 0.9995
         self.batch_size = 256
 
         self.model = create_dqn_model(state_shape[0], state_shape[1], num_actions)

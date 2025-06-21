@@ -67,8 +67,8 @@ def print_final_results(results, num_games):
     print("\n" + "="*60)
 
 if __name__ == '__main__':
-    NUM_GAMES = 1000
-    DIFFICULTY_NAME = "BABY"
+    NUM_GAMES = 10000
+    DIFFICULTY_NAME = "EASY"
     DIFFICULTY_SETTINGS = DIFFICULTY_LEVELS[DIFFICULTY_NAME]
 
     all_results = {}

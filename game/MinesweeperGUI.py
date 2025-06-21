@@ -124,7 +124,7 @@ class PygameMinesweeperGUI:
         pygame.quit()
     
 if __name__ == "__main__":
-    DIFFICULTY = 'EVIL'
+    DIFFICULTY = 'EASY'
     game = MinesweeperGame(**DIFFICULTY_LEVELS[DIFFICULTY])
     gui = PygameMinesweeperGUI(game)
     running = True

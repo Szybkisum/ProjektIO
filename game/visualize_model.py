@@ -2,7 +2,7 @@ from dqn_architecture import create_dqn_model
 from tensorflow.keras.utils import plot_model # type: ignore
 from DiffcultySettings import DIFFICULTY_LEVELS
 
-DIFFICULTY_NAME = "MEDIUM"
+DIFFICULTY_NAME = "BABY"
 settings = DIFFICULTY_LEVELS[DIFFICULTY_NAME]
 
 height = settings['height']

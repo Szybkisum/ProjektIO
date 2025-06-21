@@ -47,8 +47,8 @@ def plot_history(history, name):
 def save_checkpoint(agent, history, episode, difficulty):
     """Zapisuje kompletny stan treningu do plików."""
     
-    model_path = f"./dqn_model_{difficulty}.keras"
-    checkpoint_path = f"./checkpoint_{difficulty}.pkl"
+    model_path = f"./dqn_model_{difficulty}_{episode}.keras"
+    checkpoint_path = f"./checkpoint_{difficulty}_{episode}.pkl"
     agent.save(model_path)
     
     checkpoint = {
@@ -87,15 +87,15 @@ def load_checkpoint(agent, difficulty):
         return history, 0
 
 def train_dqn():
-    EPISODES = 20000
+    EPISODES = 40000
     MAX_STEPS = 1000
-    DIFFICULTY = "BABY"
+    DIFFICULTY = "EASY"
     settings = DIFFICULTY_LEVELS[DIFFICULTY]
     height, width, num_mines = settings['height'], settings['width'], settings['num_mines']
 
     num_actions = height * width
 
-    state_shape = (height, width, 12)
+    state_shape = (height, width, 10)
     agent = DQNAgent(state_shape, num_actions)
 
     history, start_episode = load_checkpoint(agent, DIFFICULTY)
