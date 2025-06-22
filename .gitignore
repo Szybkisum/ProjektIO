@@ -194,6 +194,5 @@ cython_debug/
 .cursorindexingignore
 
 *.h5
-*training_progress*.png
 *.keras
 *.pkl
